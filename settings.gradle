@@ -1,0 +1,1 @@
+include ':zxingLibrary', ':ZXingEx', ':PullToRefresh', ':setting', ':powerkey', ':FragmentEx', ':MenuEx', ':GCMEx', ':DialogViewPagerEx'

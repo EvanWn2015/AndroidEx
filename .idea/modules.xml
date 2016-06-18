@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AndroidEx.iml" filepath="$PROJECT_DIR$/AndroidEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DialogViewPagerEx/DialogViewPagerEx.iml" filepath="$PROJECT_DIR$/DialogViewPagerEx/DialogViewPagerEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FragmentEx/FragmentEx.iml" filepath="$PROJECT_DIR$/FragmentEx/FragmentEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GCMEx/GCMEx.iml" filepath="$PROJECT_DIR$/GCMEx/GCMEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MenuEx/MenuEx.iml" filepath="$PROJECT_DIR$/MenuEx/MenuEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PullToRefresh/PullToRefresh.iml" filepath="$PROJECT_DIR$/PullToRefresh/PullToRefresh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ZXingEx/ZXingEx.iml" filepath="$PROJECT_DIR$/ZXingEx/ZXingEx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/powerkey/powerkey.iml" filepath="$PROJECT_DIR$/powerkey/powerkey.iml" />
+      <module fileurl="file://$PROJECT_DIR$/setting/setting.iml" filepath="$PROJECT_DIR$/setting/setting.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zxingLibrary/zxingLibrary.iml" filepath="$PROJECT_DIR$/zxingLibrary/zxingLibrary.iml" />
+    </modules>
+  </component>
+</project>
