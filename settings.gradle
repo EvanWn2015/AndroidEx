@@ -1,1 +1,1 @@
-include ':zxingLibrary', ':ZXingEx', ':PullToRefresh', ':setting', ':powerkey', ':FragmentEx', ':MenuEx', ':GCMEx', ':DialogViewPagerEx'
+include ':zxingLibrary', ':ZXingEx', ':PullToRefresh', ':setting', ':powerkey', ':FragmentEx', ':MenuEx', ':GCMEx', ':DialogViewPagerEx', ':backend', ':GCMEx2', ':ViewPragerNDrawLayoutEx', ':locationsframelayout', ':RecyclerViewEx', ':FileUpEx'

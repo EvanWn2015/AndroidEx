@@ -9,11 +9,17 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/DialogViewPagerEx" />
+            <option value="$PROJECT_DIR$/FileUpEx" />
             <option value="$PROJECT_DIR$/FragmentEx" />
             <option value="$PROJECT_DIR$/GCMEx" />
+            <option value="$PROJECT_DIR$/GCMEx2" />
             <option value="$PROJECT_DIR$/MenuEx" />
             <option value="$PROJECT_DIR$/PullToRefresh" />
+            <option value="$PROJECT_DIR$/RecyclerViewEx" />
+            <option value="$PROJECT_DIR$/ViewPragerNDrawLayoutEx" />
             <option value="$PROJECT_DIR$/ZXingEx" />
+            <option value="$PROJECT_DIR$/backend" />
+            <option value="$PROJECT_DIR$/locationsframelayout" />
             <option value="$PROJECT_DIR$/powerkey" />
             <option value="$PROJECT_DIR$/setting" />
             <option value="$PROJECT_DIR$/zxingLibrary" />
@@ -23,11 +29,17 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/DialogViewPagerEx" />
+            <option value="$PROJECT_DIR$/FileUpEx" />
             <option value="$PROJECT_DIR$/FragmentEx" />
             <option value="$PROJECT_DIR$/GCMEx" />
+            <option value="$PROJECT_DIR$/GCMEx2" />
             <option value="$PROJECT_DIR$/MenuEx" />
             <option value="$PROJECT_DIR$/PullToRefresh" />
+            <option value="$PROJECT_DIR$/RecyclerViewEx" />
+            <option value="$PROJECT_DIR$/ViewPragerNDrawLayoutEx" />
             <option value="$PROJECT_DIR$/ZXingEx" />
+            <option value="$PROJECT_DIR$/backend" />
+            <option value="$PROJECT_DIR$/locationsframelayout" />
             <option value="$PROJECT_DIR$/powerkey" />
             <option value="$PROJECT_DIR$/setting" />
             <option value="$PROJECT_DIR$/zxingLibrary" />
