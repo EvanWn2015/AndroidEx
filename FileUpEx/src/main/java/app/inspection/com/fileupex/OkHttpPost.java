@@ -93,15 +93,13 @@ public class OkHttpPost {
 
     public static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8");
 
-    public String postFile(String url, File data,String file_name) throws IOException {
+    public String postFile(String url, File data, String file_key, String file_name,String file_type) throws IOException {
         client = getClient();
 
         RequestBody requestBody = new MultipartBuilder()
                 .type(MultipartBuilder.FORM)
-                .addFormDataPart("image_file", file_name, RequestBody.create(MediaType.parse("image/png"), data))
+                .addFormDataPart(file_key, file_name, RequestBody.create(MediaType.parse(file_type), data))
                 .build();
-
-        RequestBody body = RequestBody.create(MEDIA_TYPE_MARKDOWN, data);
 
         Request request = new Request.Builder()
                 .url(url)
