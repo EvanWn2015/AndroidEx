@@ -12,6 +12,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -35,31 +36,39 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 實作拍照取得File & 錄音取得File，
+ * okHttp 實作 post FromData 上傳 file,
+ * okHttp 實作 忽略 SSL 協議
+ * Android 6.0 權限
+ */
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
     private Context context;
     private ImageView ivPic;
     private Display display;
+    private Toolbar toolbar;
+    private FloatingActionButton fab;
 
-    private final static int UPLOAD_IMAGE_ID = 1;
-    private final static int UPLOAD_MP3_ID = 2;
+    // MENU
+    private final static int UPLOAD_IMAGE_MENU_ID = 1;
+    private final static int UPLOAD_MP3_MENU_ID = 2;
 
-    private final static int REQUEST_TAKE_RECORD = 999999;
+    // onActivityResult  ResultId
+    //    private final static int REQUEST_TAKE_RECORD = 999999;
     private final static int REQUEST_TAKE_PIC = 0;
 
     private OkHttpGet okHttpGet = new OkHttpGet();
     private OkHttpPost okHttpPost = new OkHttpPost("");
-    private File file;
+    private File file, dir;
 
-
+    // 錄音
     private final static int RECORD_AUDIO_REQUEST_CODE = 669;
-    private boolean record_status;
     private MediaRecorder mediaRecorder;
     private Dialog dialog;
     private TextView tv_path;
-    private ImageView iv_start, iv_stop;
+    private ImageView iv_start, iv_stop, iv_upload;
     private String path;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,50 +78,68 @@ public class MainActivity extends AppCompatActivity {
         display = getWindowManager().getDefaultDisplay();
 
         findViews();
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // 6.0 權限
+//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            // 申請 RECORD_AUDIO 權限
+//            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_REQUEST_CODE);
+//        }
+
+        // 上傳圖片
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (file != null) {
-                    String url = "https://172.16.0.106:443/IS-AS/sit/1/backend/check/upload_image?apsystem=SIT&user_id=1&check_result_id=183";
-                    String file_name = new SimpleDateFormat("yyyyMMdd.HH_mm_ss ").format(new Date().getTime()) + ".jpg";
-                    new RunUserInfo(url, file, file_name).start();
+                    String url = "https://172.16.0.106:443/IS-AS/sit/1/backend/check/upload_image?apsystem=SIT&user_id=1&check_result_id=308";
+                    String file_name = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date().getTime()) + ".jpg";
+                    new RunUpLoad(url, file, "image_file", file_name, "image/png").start();
+                    setTitle(" " + file_name);
                 } else {
-                    Log.i(TAG, "file = null");
+                    Log.i(TAG, "file == null");
                 }
 
             }
         });
 
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            //申请WRITE_EXTERNAL_STORAGE权限
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_REQUEST_CODE);
-        }
-
+        // 開始錄音
         iv_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // android 6.0 錄音權限
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    // 申請 RECORD_AUDIO 權限
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_REQUEST_CODE);
+                }
 
-                File dir = getRecordDir();
+                dir = getRecordDir();
                 if (dir == null) {
                     tv_path.setText("audio file does not exist");
                     return;
                 }
                 String name = String.format("%tY%<tm%<td_%<tH%<tM%<tS", new Date()) + ".mp3";
-                path = new File(dir, (new SimpleDateFormat("yyyyMMdd_HHmmss ").format(new Date().getTime())) + ".mp3").getPath();
+
+                Log.i(TAG, "name : " + name);
+                path = new File(dir, name).getPath();
                 if (recordAudio(path)) {
                     tv_path.setText("Recording...");
                     iv_start.setEnabled(false);
                 }
+
+                // 觀察 dir size
+                final Handler handler = new Handler();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, new File(path).length() + "");
+                        handler.postDelayed(this, 500);
+                    }
+                });
             }
         });
 
-
+        // 停止錄音
         iv_stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,10 +149,23 @@ public class MainActivity extends AppCompatActivity {
                     mediaRecorder = null;
                     tv_path.setText("File saved: " + path);
                     iv_start.setEnabled(true);
-                    File dir = new File(path).getParentFile();
+                    dir = new File(path);
                     Toast.makeText(context, dir.length() + "", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
-
+        // 上傳 錄音 file
+        iv_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "https://172.16.0.106:443/IS-AS/sit/1/backend/check/upload_audio?apsystem=SIT&user_id=1&check_result_id=308";
+                String file_name = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date().getTime()) + ".mp3";
+                if (dir != null) {
+                    Log.i(TAG, "dir != null");
+                    new RunUpLoad(url, dir, "audio_file", file_name, "audio/mp3").start();
+                } else {
+                    Log.i(TAG, "dir == null");
                 }
             }
         });
@@ -133,18 +173,23 @@ public class MainActivity extends AppCompatActivity {
 
     public void findViews() {
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+
         ivPic = (ImageView) findViewById(R.id.ivPic);
 
+        // 錄音 dialog
         dialog = new Dialog(context);
         LayoutInflater inflater = getLayoutInflater();
         inflater.inflate(R.layout.dialog_record, null);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.width = (int)(display.getWidth() * 0.8);
+        params.width = (int) (display.getWidth() * 0.8);
         params.height = display.getHeight() / 3;
         dialog.addContentView(inflater.inflate(R.layout.dialog_record, null), params);
         tv_path = (TextView) dialog.findViewById(R.id.tv_path);
         iv_start = (ImageView) dialog.findViewById(R.id.iv_start);
         iv_stop = (ImageView) dialog.findViewById(R.id.iv_stop);
+        iv_upload = (ImageView) dialog.findViewById(R.id.iv_upload);
     }
 
 
@@ -160,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
         return getExternalFilesDir(Environment.DIRECTORY_MUSIC);
     }
 
+    // 錄音相關設定
     private boolean recordAudio(String path) {
         if (mediaRecorder == null) {
             mediaRecorder = new MediaRecorder();
@@ -184,37 +230,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    class RunUserInfo extends Thread {
-        String url;
-        String json;
-        File file;
-        String file_name;
-
-        RunUserInfo(String url, File file, String file_name) {
-            this.url = url;
-            this.file = file;
-            this.file_name = file_name;
-        }
-
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        };
-
-        @Override
-        public void run() {
-            Log.i(TAG, "file != null");
-            try {
-                json = okHttpPost.postFile(url, file, file_name);
-                Log.i(TAG, json);
-            } catch (Exception e) {
-                Log.i(TAG, e.getMessage());
-            }
-        }
-    }
-
+    // android 6.0 權限
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -232,14 +248,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_TAKE_RECORD:
-                    break;
                 case REQUEST_TAKE_PIC:
                     Log.i(TAG, file.getPath() + "");
                     Bitmap bitmapPic = BitmapFactory.decodeFile(file.getPath());
@@ -278,8 +291,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 //        getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        menu.add(Menu.NONE, UPLOAD_IMAGE_ID, Menu.NONE, "Upload Image");
-        menu.add(Menu.NONE, UPLOAD_MP3_ID, Menu.NONE, "Upload mp3");
+        menu.add(Menu.NONE, UPLOAD_IMAGE_MENU_ID, Menu.NONE, "Upload Image");
+        menu.add(Menu.NONE, UPLOAD_MP3_MENU_ID, Menu.NONE, "Upload mp3");
         return true;
     }
 
@@ -289,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch (id) {
-            case UPLOAD_IMAGE_ID:
+            case UPLOAD_IMAGE_MENU_ID:
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
                 file = new File(file, "upload_image.jpg");
@@ -300,8 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
                 }
                 break;
-            case UPLOAD_MP3_ID:
-
+            case UPLOAD_MP3_MENU_ID:
                 dialog.show();
                 break;
         }
@@ -314,4 +326,40 @@ public class MainActivity extends AppCompatActivity {
         List<ResolveInfo> list = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         return list.size() > 0;
     }
+
+    // UpLoad Thread
+    class RunUpLoad extends Thread {
+        String url;
+        String json;
+        File file;
+        String file_key, file_name, file_type;
+
+        RunUpLoad(String url, File file, String file_key, String file_name, String file_type) {
+            this.url = url;
+            this.file = file;
+            this.file_key = file_key;
+            this.file_name = file_name;
+            this.file_type = file_type;
+        }
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        };
+
+        @Override
+        public void run() {
+            Log.i(TAG, "Thread  In");
+            try {
+                json = okHttpPost.postFile(url, file, file_key, file_name, file_type);
+                Log.i(TAG, json);
+            } catch (Exception e) {
+                Log.i(TAG, e.getMessage());
+            }
+        }
+    }
+
+
 }
